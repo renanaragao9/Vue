@@ -1,18 +1,23 @@
 <script lang="ts">
     
     import SelecionarIngredientes from './SelecionarIngredientes.vue';
+    import MostrarReceitas from './MostrarReceitas.vue';
     import SuaLista from './SuaLista.vue';
     import Tag from './Tag.vue';
+    
+
+    type Pagina = 'SelecionarIngredientes' | 'MostrarReceitas';
 
     export default {
         
         data() {
             return {
-                ingredientes: [] as string[]
+                ingredientes: [] as string[],
+                conteudo: 'SelecionarIngredientes' as Pagina
             }
         },
 
-        components: { SelecionarIngredientes, Tag, SuaLista},
+        components: { SelecionarIngredientes, Tag, SuaLista, MostrarReceitas},
 
         methods: {
             adicionarIngrediente(ingrediente: string) {
@@ -22,21 +27,36 @@
             removerIngrediente(ingrediente: string) {
                 this.ingredientes = this.ingredientes.filter(iLista => ingrediente !== iLista);
             },
+
+            navegar(pagina: Pagina) {
+                this.conteudo = pagina;
+            }
         },
+
+        emits: ['adicionarIngredientes', 'removerIngrediente']
     }
 
 </script>
 
 <template>
     <main class="conteudo-principal">
-      <SuaLista :ingredientes="ingredientes" />
-  
-      <SelecionarIngredientes 
-        @adicionar-ingrediente="adicionarIngrediente"
-        @remover-ingrediente="removerIngrediente"
-      />
+        
+        <SuaLista :ingredientes="ingredientes" />
+
+        <keep-alive include="SelecionarIngredientes">
+            <SelecionarIngredientes v-if="conteudo === 'SelecionarIngredientes'"
+                @adicionar-ingrediente="adicionarIngrediente"
+                @remover-ingrediente="removerIngrediente"
+                @buscar-receitas="navegar('MostrarReceitas')"
+            />
+
+            <MostrarReceitas v-else-if="conteudo === 'MostrarReceitas'"
+                :ingredientes="ingredientes"
+                @editar-receitas="navegar('SelecionarIngredientes')"
+            />
+        </keep-alive>
     </main>
-  </template>
+</template>
 
 <style scoped>
     .conteudo-principal {
